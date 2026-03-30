@@ -13,11 +13,37 @@ OpenAI-compatible HTTP server for [MLX-Node](https://github.com/mlx-node/mlx-nod
 
 ## Quick Start
 
+### Project Relationship
+
+This project is an **HTTP server wrapper** around [`@mlx-node/lm`](https://github.com/mlx-node/mlx-node). It provides an OpenAI-compatible API layer for running MLX models locally.
+
+```
+git/
+├── mlx-node/          # Core MLX library (required dependency)
+└── mlx-node-api/      # This HTTP server project
+```
+
 ### Prerequisites
 
 - Node.js 18+
-- MLX-Node installed (see [mlx-node/packages/lm](https://github.com/mlx-node/mlx-node))
+- **mlx-node** cloned as a sibling directory (see below)
 - A downloaded MLX-compatible model
+
+### Installing mlx-node
+
+This project depends on `@mlx-node/lm` via a local file dependency. You must clone mlx-node alongside this project:
+
+```bash
+# From the parent directory (git/ in this case)
+cd /Users/caimlas/git
+git clone https://github.com/mlx-node/mlx-node.git
+
+# Verify structure
+ls -la
+# Should show both: mlx-node/ and mlx-node-api/
+```
+
+The `package.json` references: `"@mlx-node/lm": "file:../mlx-node/packages/lm"`
 
 ### Installation
 
