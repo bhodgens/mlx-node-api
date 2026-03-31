@@ -9,6 +9,7 @@ import type { ServerConfig } from '../config.js';
 import { ModelRegistry } from './model-registry.js';
 import { createChatRoute } from '../routes/chat.js';
 import { createModelsRoute } from '../routes/models.js';
+import { createMessagesRoute } from '../routes/messages.js';
 import type { OpenAIErrorResponse } from '../types/openai.js';
 
 export function createApp(config: ServerConfig, modelRegistry: ModelRegistry) {
@@ -48,6 +49,9 @@ export function createApp(config: ServerConfig, modelRegistry: ModelRegistry) {
   const appV1 = new Hono();
   appV1.route('/chat/completions', createChatRoute(modelRegistry));
   appV1.route('/models', createModelsRoute(modelRegistry));
+
+  // Anthropic-compatible routes
+  appV1.route('/messages', createMessagesRoute(modelRegistry));
 
   app.route('/v1', appV1);
 

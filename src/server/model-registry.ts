@@ -6,6 +6,16 @@ import { loadModel } from '@mlx-node/lm';
 import type { TrainableModel } from '@mlx-node/lm';
 import type { ModelConfig } from '../config.js';
 
+// Claude model IDs that should map to the default model
+const CLAUDE_MODEL_ALIASES = [
+  'claude-opus-4-5-20211101',
+  'claude-opus-4-6',
+  'claude-sonnet-4-6',
+  'claude-3-5-sonnet-20241022',
+  'claude-3-5-sonnet-20240620',
+  'claude-3-opus-20240229',
+];
+
 export interface ModelWithMetadata {
   name: string;
   path: string;
@@ -17,6 +27,13 @@ export interface ModelWithMetadata {
 export class ModelRegistry {
   private models = new Map<string, ModelWithMetadata>();
   private defaultModel: string | null = null;
+
+  /**
+   * Check if a model name is a Claude alias
+   */
+  private isClaudeAlias(name: string): boolean {
+    return CLAUDE_MODEL_ALIASES.includes(name);
+  }
 
   /**
    * Load a model and add it to the registry
@@ -66,6 +83,11 @@ export class ModelRegistry {
    * Get a model by name
    */
   getModel(name: string): ModelWithMetadata | undefined {
+    // If it's a Claude alias, use the default model
+    if (this.isClaudeAlias(name) && this.defaultModel) {
+      return this.models.get(this.defaultModel);
+    }
+
     // If name not found, try the default model
     if (!this.models.has(name) && this.defaultModel) {
       console.warn(`Model '${name}' not found, using default '${this.defaultModel}'`);

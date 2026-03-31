@@ -1,12 +1,16 @@
 # MLX-Node API
 
-OpenAI-compatible HTTP server for [MLX-Node](https://github.com/mlx-node/mlx-node) models. Run local LLMs with an API that's compatible with OpenAI's client libraries.
+> **Note:** This is a rough proof of concept. Features may be incomplete and the implementation is subject to change.
+
+OpenAI and Anthropic-compatible HTTP server for [MLX-Node](https://github.com/mlx-node/mlx-node) models. Run local LLMs with an API that's compatible with OpenAI and Anthropic client libraries.
 
 ## Features
 
 - OpenAI-compatible `/v1/chat/completions` and `/v1/models` endpoints
-- Streaming response support (SSE)
+- Anthropic-compatible `/v1/messages` endpoint (Messages API)
+- Streaming response support (SSE) for both APIs
 - Multi-model support with automatic fallback to default model
+- Claude model ID aliases (e.g., `claude-sonnet-4-6`, `claude-opus-4-6`) map to your default model
 - CORS-enabled for web applications
 - Environment variable and config file support
 - Zero-dependency CLI for easy local deployment
@@ -177,6 +181,48 @@ const response = await client.chat.completions.create({
 console.log(response.choices[0].message.content);
 ```
 
+### Using Anthropic SDK
+
+The API also supports Anthropic's Messages API format.
+
+**Python:**
+
+```python
+import anthropic
+
+client = anthropic.Anthropic(
+    base_url="http://localhost:3000/v1",
+    api_key="not-needed"  # API key not required
+)
+
+message = client.messages.create(
+    model="claude-sonnet-4-6",  # Maps to your default model
+    max_tokens=512,
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+print(message.content[0].text)
+```
+
+**JavaScript/TypeScript:**
+
+```javascript
+import Anthropic from '@anthropic-ai/sdk';
+
+const client = new Anthropic({
+  baseURL: 'http://localhost:3000/v1',
+  apiKey: 'not-needed', // API key not required
+});
+
+const response = await client.messages.create({
+  model: 'claude-sonnet-4-6', // Maps to your default model
+  maxTokens: 512,
+  messages: [{ role: 'user', content: 'Hello!' }],
+});
+
+console.log(response.content[0].text);
+```
+
 ## API Endpoints
 
 ### `GET /v1/models`
@@ -227,6 +273,35 @@ Create a chat completion.
 | `stream` | boolean | No | Enable SSE streaming (default: false) |
 | `max_tokens` | number | No | Maximum tokens to generate |
 | `temperature` | number | No | Sampling temperature (0-2) |
+
+### `POST /v1/messages`
+
+Create an Anthropic-style message completion. Compatible with Anthropic's Messages API.
+
+**Request Body:**
+
+```json
+{
+  "model": "claude-sonnet-4-6",
+  "messages": [
+    { "role": "user", "content": "Hello!" }
+  ],
+  "max_tokens": 512,
+  "stream": false,
+  "temperature": 0.7
+}
+```
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `model` | string | Yes | Model ID (Claude aliases map to default model) |
+| `messages` | array | Yes | Array of message objects |
+| `max_tokens` | number | Yes | Maximum tokens to generate |
+| `stream` | boolean | No | Enable SSE streaming (default: false) |
+| `temperature` | number | No | Sampling temperature (0-2) |
+| `system` | string | No | System prompt |
 
 ### `GET /health`
 
